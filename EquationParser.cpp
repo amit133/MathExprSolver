@@ -7,7 +7,7 @@ using namespace std;
 const int NUMBER = 0, OPERATION = 1, BRACKET = 2, WHITESPACE =3, OTHER = 4;
 
 map<string, string> equationParams;
-map<string, string>::iterator paramsItr;
+map<string, string>::iterator isParam;
 
 int get_type(char ch) {
     if((ch >= '0' && ch <= '9') || ch == '.') { return NUMBER; }
@@ -23,8 +23,16 @@ int get_type(char ch) {
     return OTHER;
 }
 
-void clearConsecutiveWhitespaces() {
+void clearConsecutiveWhitespaces(string& equ, size_t &pos) {
+    size_t whiteSpaceCount = 0;
 
+    // Find and remove all continuous whitespaces
+    while(get_type(equ[pos + whiteSpaceCount]) == WHITESPACE) {
+        ++whiteSpaceCount;
+    }
+
+    // Erase all whitespaces found in this iteration
+    equ = equ.erase(pos, whiteSpaceCount);
 }
 
 int main() {
@@ -34,7 +42,7 @@ int main() {
     equationParams["gamma"] = "1.0";
     equationParams["alpha"] = "0.32";
 
-    string equ = "PRNW-   23/gamma/ 44+alpha*0.45*  POSUB";
+    string equ = "PRNW-   23/gamma/ 44+alpha*0.45*  POSUB  ";
     //cout << "Enter an expression" << endl;
     //cin >> equ;
 
@@ -42,35 +50,22 @@ int main() {
     size_t pos = 0;
     size_t len = equ.length();
     cout << "Size of string: " << len << endl;
-    char ch;// = equ[pos];
+    char ch; // = equ[pos];
     string const_buffer;
     string var_buffer;
     string other;
-    size_t whiteSpaceCount = 0;
+
     while(pos < len) {
         ch = equ[pos];
         int type = get_type(ch);
         //cout << ch << endl;
         switch(type) {
             case WHITESPACE:
-                whiteSpaceCount = 1;
-                ++pos;
-                // Find and remove all continuous whitespaces
-                while(get_type(equ[pos]) == WHITESPACE) {
-                    ++whiteSpaceCount;
-                    ++pos;
-                }
+                // Omit any whitespace till the next char or end of the string.
+                clearConsecutiveWhitespaces(equ, pos);
 
-                pos = pos-whiteSpaceCount;
-
-                // Erase all whitespaces found in this iteration
-                equ = equ.erase(pos, whiteSpaceCount);
-
-                // Reset the white space counter
-                whiteSpaceCount = 0;
-
-                //cout << "Equation after erasing whitespace: " << equ << endl;
-                //cout << "Pos = " << pos << " Char at pos: " << equ[pos] << endl;
+                // Reset the length of the equation string
+                len = equ.length();
 
             break;
 
@@ -80,27 +75,14 @@ int main() {
             case OPERATION:
                 cout << "An operator found: " << ch << endl;
 
-                // Omit any whitespace if present.
+                // Omit any whitespace till the next char or end of the string.
                 ++pos;
+                clearConsecutiveWhitespaces(equ, pos);
 
-                // Start with zero white space count
-                whiteSpaceCount = 0;
-                while(get_type(equ[pos]) == WHITESPACE) {
-                    ++whiteSpaceCount;
-                    ++pos;
-                }
+                // Reposition the index
+                --pos;
 
-                pos = pos-whiteSpaceCount-1;
-
-                // Erase all whitespaces found in this iteration
-                equ = equ.erase(pos+1, whiteSpaceCount);
-
-                cout << "Equation after erasing whitespace: " << equ << endl;
-                cout << "Pos = " << pos << " Char at pos: " << equ[pos] << endl;
-                // Reset the white space counter
-                whiteSpaceCount = 0;
-
-                // Reset the length of the string
+                // Reset the length of the equation string
                 len = equ.length();
 
                 // Check if consecutive operators are present in the expression.
@@ -109,20 +91,22 @@ int main() {
                     exit(-1);
                 }
 
-                // Write logic if a param or variable name is found
+                // Write logic if a param or a variable name is found
                 if (other.size() > 0) {
-                    paramsItr = equationParams.find(other);
-                    if(paramsItr != equationParams.end()) {
-                        // Replace the param name with the actual value in the expression string
-                        //cout << equ.substr(0, pos - other.size()) << paramsItr->second << equ.substr(pos) << endl;
+                    isParam = equationParams.find(other);
+                    if(isParam != equationParams.end()) {
+                        //cout << equ.substr(0, pos - other.size()) << isParam->second << equ.substr(pos) << endl;
                         
-                        equ = equ.substr(0, pos - other.size()) + paramsItr->second + equ.substr(pos);
+                        // Replace the param name in the expression string with its numerical value
+                        equ = equ.substr(0, pos - other.size()) + isParam->second + equ.substr(pos);
+
                         // Reset the length of the string
                         len = equ.length();
                         cout << "New equation: " << equ << endl;
-                        pos = pos - other.size() + (paramsItr->second).size();
-
+                        pos = pos - other.size() + (isParam->second).size();
                     }
+
+                    // Reset the buffer
                     other.clear();
                 }
             break;
