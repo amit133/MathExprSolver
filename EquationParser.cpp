@@ -9,7 +9,7 @@ const int NUMBER = 0, OPERATION = 1, BRACKET = 2, WHITESPACE =3, OTHER = 4;
 map<string, string> equationParams;
 map<string, string>::iterator isParam;
 
-int get_type(char ch) {
+int getCharType(char ch) {
     if((ch >= '0' && ch <= '9') || ch == '.') { return NUMBER; }
 
     // OPs + - * / ^
@@ -27,7 +27,7 @@ void clearConsecutiveWhitespaces(string& equ, size_t &pos) {
     size_t whiteSpaceCount = 0;
 
     // Find and remove all continuous whitespaces
-    while(get_type(equ[pos + whiteSpaceCount]) == WHITESPACE) {
+    while(getCharType(equ[pos + whiteSpaceCount]) == WHITESPACE) {
         ++whiteSpaceCount;
     }
 
@@ -49,7 +49,7 @@ int main() {
     cout << "Expression to be parsed: " << equ << endl;
     size_t pos = 0;
     size_t len = equ.length();
-    cout << "Size of string: " << len << endl;
+    //cout << "Size of string: " << len << endl;
     char ch; // = equ[pos];
     string const_buffer;
     string var_buffer;
@@ -57,7 +57,7 @@ int main() {
 
     while(pos < len) {
         ch = equ[pos];
-        int type = get_type(ch);
+        int type = getCharType(ch);
         //cout << ch << endl;
         switch(type) {
             case WHITESPACE:
@@ -73,7 +73,7 @@ int main() {
             break;
 
             case OPERATION:
-                cout << "An operator found: " << ch << endl;
+                //cout << "An operator found: " << ch << endl;
 
                 // Omit any whitespace till the next char or end of the string.
                 ++pos;
@@ -86,7 +86,7 @@ int main() {
                 len = equ.length();
 
                 // Check if consecutive operators are present in the expression.
-                if(get_type(equ[pos+1]) == OPERATION) {
+                if(getCharType(equ[pos+1]) == OPERATION) {
                     cout << "Invalid expression as back to back to operator is not allowed" << endl;
                     exit(-1);
                 }
@@ -102,7 +102,7 @@ int main() {
 
                         // Reset the length of the string
                         len = equ.length();
-                        cout << "New equation: " << equ << endl;
+                        //cout << "New equation after substituting for param value: " << equ << endl;
                         pos = pos - other.size() + (isParam->second).size();
                     }
 
@@ -124,6 +124,6 @@ int main() {
         ++pos;
     }
 
-    cout << "Equation after parse: " << equ << endl;
+    cout << "Expression after parsing: " << equ << endl;
     return 0;
 }
