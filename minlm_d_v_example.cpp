@@ -26,24 +26,24 @@ void  function1_fvec(const real_1d_array &x, real_1d_array &fi, void *ptr)
     //std::string expression_string2 = "pow(x1-3,2)";
 
 
-    std::string expression_string_0="Y-N^0.58221*((1-b)*KP^-1.381+b*SF^-1.381)^((1-0.58221)/-1.381)";
+    std::string expression_string_0="Y-N^0.58221*((1-0.00003)*KP^-1.381+0.00003*SF^-1.381)^((1-0.58221)/-1.381)";                                   
     std::string expression_string_1="E-0.32*OE-0.42*G-1*RNW";
     std::string expression_string_2="PE-1/0.32*POSUB";
     std::string expression_string_3="PG-0.42/0.32*POSUB";
     std::string expression_string_4="PRNW-1/0.32*POSUB";
-    std::string expression_string_5="S-(a*E^-0.25786+(1-a)*OS^-0.25786)^(1/-0.25786)";
-    std::string expression_string_6="PS-POSUB*(OS^(1--0.25786))/(1-a)*(a*E^-0.25786+(1-a)*OS^-0.25786)^((-0.25786-1)/-0.25786)";
-    std::string expression_string_7="PS-PE*(E^(1--0.25786))/a*(a*E^-0.25786+(1-a)*OS^-0.25786)^((-0.25786-1)/-0.25786)";
-    std::string expression_string_8="W-0.58221*N^(0.58221-1)*((1-b)*KP^-1.381+b*SF^-1.381)^((1-0.58221)/-1.381)";
-    std::string expression_string_9="R-(1-0.58221)*(1-b)*KP^(-1.381-1)*N^0.58221*((1-b)*KP^-1.381+b*SF^-1.381)^((1-0.58221)/-1.381-1)";
-    std::string expression_string_10="PS-(1-0.58221)*b*SF^(-1.381-1)*N^0.58221*((1-b)*KP^-1.381+b*SF^-1.381)^((1-0.58221)/-1.381-1)";
+    std::string expression_string_5="S-(0.33230*E^-0.25786+(1-0.33230)*OS^-0.25786)^(1/-0.25786)";
+    std::string expression_string_6="PS-POSUB*(OS^(1--0.25786))/(1-0.33230)*(0.33230*E^-0.25786+(1-0.33230)*OS^-0.25786)^((-0.25786-1)/-0.25786)";
+    std::string expression_string_7="PS-PE*(E^(1--0.25786))/0.33230*(0.33230*E^-0.25786+(1-0.33230)*OS^-0.25786)^((-0.25786-1)/-0.25786)";
+    std::string expression_string_8="W-0.58221*N^(0.58221-1)*((1-0.00003)*KP^-1.381+0.00003*SF^-1.381)^((1-0.58221)/-1.381)";
+    std::string expression_string_9="R-(1-0.58221)*(1-0.00003)*KP^(-1.381-1)*N^0.58221*((1-0.00003)*KP^-1.381+0.00003*SF^-1.381)^((1-0.58221)/-1.381-1)";
+    std::string expression_string_10="PS-(1-0.58221)*0.00003*SF^(-1.381-1)*N^0.58221*((1-0.00003)*KP^-1.381+0.00003*SF^-1.381)^((1-0.58221)/-1.381-1)";
     std::string expression_string_11="N-1";
-    std::string expression_string_12="PS-d*(SH/C)^((-1/3)-1)";
+    std::string expression_string_12="PS-0.0028*(SH/C)^((-1/3)-1)";
     std::string expression_string_13="(B-(1+RSTAR)*B)-0.16*(Y+PO*(O-OE-OS))";
     std::string expression_string_14="1-0.96*(1-0.1+R)";
     std::string expression_string_15="B+KP-(1-0.1)*KP+C+PS*SH-W*N-R*KP-(1+RSTAR)*B-TR";
     std::string expression_string_16="PRNW*RNW+POSUB*(OS+OE)+PO*(O-OS-OE)+PG*G-TR-0";
-    std::string expression_string_17="RNW-A/(1+0.5*RNW/E)*KG";
+    std::string expression_string_17="RNW-.0328/(1+0.5*RNW/E)*KG";
     std::string expression_string_18="S-SF-SH";
     std::string expression_string_19="PO-1.6371";
     std::string expression_string_20="RSTAR-0.04";
@@ -196,7 +196,11 @@ void  function1_fvec(const real_1d_array &x, real_1d_array &fi, void *ptr)
     fi[22] = expression22.value();
     fi[23] = expression23.value();
     fi[24] = expression24.value();
-    cout << "fi0 " << fi[3] << fi[5] << fi[14] << endl;;
+    for(int k = 0; k < 25; ++k) {
+        cout << "fi[" << k <<  "] = " << fi[k] << endl;
+    }
+
+    cout << endl << endl;
 }
 
 int main(int argc, char **argv)
@@ -216,23 +220,27 @@ int main(int argc, char **argv)
     //
     
     //OE0,E0,G0,RNW0,PE0,POSUB0,PG0,PRNW0,S0,OS0,PS0,N0,KP0,SF0,W0,R0,SH0,C0,RSTAR0,TR0,PO0,B0,O0,KG0,Y0
-    real_1d_array x = "[0.030500,0.015632,0.013980,0.000001,1.562500,0.500000,0.656300,1.562500,0.038908,0.067350,1.493231,1.000000,5.624600,0.026229,1.180557,0.140000,0.012680,0.936300,0.040000,0.686829,1.637100,-8.110867,0.481900,0.000001,2.027717]";
+    //real_1d_array x = "[0.030500,0.015632,0.013980,0.000000,1.562500,0.500000,0.656300,1.562500,0.038908,0.067350,1.493231,1.000000, 
+    // 5.624600,0.026229,1.180557,0.140000,0.012680,0.936300,0.040000,0.686829,1.637100,-8.110867,0.481900,0.000000,2.027717]";
     //real_1d_array x = "[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]";
+    real_1d_array x = "[0.0305, 0.0156, 0.0140, 0, 1.5625, 0.5000, 0.6563, 1.5625, 0.0389, 0.0673, 1.4932, 1.0000, \
+    5.6246, 0.0262, 1.1806, 0.1400, 0.0127, 0.9363, 0.0400, 0.6868, 1.6371, -8.1109, 0.4819, 0, 2.0277]";
     double epsx = 0.0000000001;
     ae_int_t maxits = 0;
     minlmstate state;
     minlmreport rep;
 
-    cout << "1" << endl;
-    minlmcreatev(25, x, 0.0001, state);
-    cout << "1" << endl;
+    //minlmcreatev(25, x, 0.000001, state);
+    minlmcreatev(25, 25, x, 0.000001, state);
     minlmsetcond(state, epsx, maxits);
-    cout << "1" << endl;
+
     alglib::minlmoptimize(state, function1_fvec);
-    cout << "1" << endl;
+
     minlmresults(state, x, rep);
 
-    cout << "x.length" << x.length() << endl;
-    printf("%s\n", x.tostring(24).c_str()); // EXPECTED: [-3,+3]
+    cout << "x.length " << x.length() << endl;
+    for(int index=0; index < x.length(); ++index) {
+        printf("%.4f\t", x[index]);
+    }
     return 0;
 }
