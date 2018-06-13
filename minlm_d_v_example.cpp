@@ -10,57 +10,71 @@ using namespace std;
 using namespace alglib;
 void  function1_fvec(const real_1d_array &x, real_1d_array &fi, void *ptr)
 {
+
     //
     // this callback calculates
-    // f0(x0,x1) = 100*(x0+3)^4,
-    // f1(x0,x1) = (x1-3)^4
     //
+    // std::string expression_string_0="E-0.32*OE-0.42*G-1*RNW";
+    // std::string expression_string_1="PE-1/0.32*POSUB";
+    // std::string expression_string_2="PG-0.42/0.32*POSUB";
+    // std::string expression_string_3="PRNW-1/0.32*POSUB";
+    // std::string expression_string_4="S-(0.33230*E^-0.25786+(1-0.33230)*OS^-0.25786)^(1/-0.25786)";
+    // std::string expression_string_5="PS-POSUB*(OS^(1--0.25786))/(1-0.33230)*(0.33230*E^-0.25786+(1-0.33230)*OS^-0.25786)^((-0.25786-1)/-0.25786)";
+    // std::string expression_string_6="PS-PE*(E^(1--0.25786))/0.33230*(0.33230*E^-0.25786+(1-0.33230)*OS^-0.25786)^((-0.25786-1)/-0.25786)";
+    // std::string expression_string_7="W-0.58221*N^(0.58221-1)*((1-0.00003)*KP^-1.381+0.00003*SF^-1.381)^((1-0.58221)/-1.381)";
+    // std::string expression_string_8="R-(1-0.58221)*(1-0.00003)*KP^(-1.381-1)*N^0.58221*((1-0.00003)*KP^-1.381+0.00003*SF^-1.381)^((1-0.58221)/-1.381-1)";
+    // std::string expression_string_9="PS-(1-0.58221)*0.00003*SF^(-1.381-1)*N^0.58221*((1-0.00003)*KP^-1.381+0.00003*SF^-1.381)^((1-0.58221)/-1.381-1)";
+    // std::string expression_string_10="N-1";
+    // std::string expression_string_11="PS-0.0028*(SH/C)^((-1/3)-1)";
+    // std::string expression_string_12="(B-(1+RSTAR)*B)-0.16*(Y+PO*(O-OE-OS))";
+    // std::string expression_string_13="1-0.96*(1-0.1+R)";
+    // std::string expression_string_14="B+KP-(1-0.1)*KP+C+PS*SH-W*N-R*KP-(1+RSTAR)*B-TR";
+    // std::string expression_string_15="PRNW*RNW+POSUB*(OS+OE)+PO*(O-OS-OE)+PG*G-TR-0";
+    // std::string expression_string_16="RNW-.0328/(1+0.5*RNW/E)*KG";
+    // std::string expression_string_17="S-SF-SH";
+    // std::string expression_string_18="PO-1.6371";
+    // std::string expression_string_19="RSTAR-0.04";
+    // std::string expression_string_20="0.05*KG-0";
+    // std::string expression_string_21="POSUB-0.5";
+    // std::string expression_string_22="O-0.4819";
+    // std::string expression_string_23="G-0.01398";
+    // std::string expression_string_24="Y-N^0.58221*((1-0.00003)*KP^-1.381+0.00003*SF^-1.381)^((1-0.58221)/-1.381)";
 
-    //fi[0] = 10*pow(x[0]+3,2);
-    //fi[1] = pow(x[1]-3,2);
-    typedef exprtk::symbol_table<double> symbol_table_t;
-    typedef exprtk::expression<double>     expression_t;
-    typedef exprtk::parser<double>             parser_t;
-
-    //std::string expression_string1 = "10*pow(x0+3,2)";
-    //std::string expression_string2 = "pow(x1-3,2)";
-
-
-    std::string expression_string_0="Y-N^0.58221*((1-0.00003)*KP^-1.381+0.00003*SF^-1.381)^((1-0.58221)/-1.381)";                                   
-    std::string expression_string_1="E-0.32*OE-0.42*G-1*RNW";
-    std::string expression_string_2="PE-1/0.32*POSUB";
-    std::string expression_string_3="PG-0.42/0.32*POSUB";
-    std::string expression_string_4="PRNW-1/0.32*POSUB";
-    std::string expression_string_5="S-(0.33230*E^-0.25786+(1-0.33230)*OS^-0.25786)^(1/-0.25786)";
-    std::string expression_string_6="PS-POSUB*(OS^(1--0.25786))/(1-0.33230)*(0.33230*E^-0.25786+(1-0.33230)*OS^-0.25786)^((-0.25786-1)/-0.25786)";
-    std::string expression_string_7="PS-PE*(E^(1--0.25786))/0.33230*(0.33230*E^-0.25786+(1-0.33230)*OS^-0.25786)^((-0.25786-1)/-0.25786)";
-    std::string expression_string_8="W-0.58221*N^(0.58221-1)*((1-0.00003)*KP^-1.381+0.00003*SF^-1.381)^((1-0.58221)/-1.381)";
-    std::string expression_string_9="R-(1-0.58221)*(1-0.00003)*KP^(-1.381-1)*N^0.58221*((1-0.00003)*KP^-1.381+0.00003*SF^-1.381)^((1-0.58221)/-1.381-1)";
-    std::string expression_string_10="PS-(1-0.58221)*0.00003*SF^(-1.381-1)*N^0.58221*((1-0.00003)*KP^-1.381+0.00003*SF^-1.381)^((1-0.58221)/-1.381-1)";
-    std::string expression_string_11="N-1";
-    std::string expression_string_12="PS-0.0028*(SH/C)^((-1/3)-1)";
-    std::string expression_string_13="(B-(1+RSTAR)*B)-0.16*(Y+PO*(O-OE-OS))";
-    std::string expression_string_14="1-0.96*(1-0.1+R)";
-    std::string expression_string_15="B+KP-(1-0.1)*KP+C+PS*SH-W*N-R*KP-(1+RSTAR)*B-TR";
-    std::string expression_string_16="PRNW*RNW+POSUB*(OS+OE)+PO*(O-OS-OE)+PG*G-TR-0";
-    std::string expression_string_17="RNW-.0328/(1+0.5*RNW/E)*KG";
-    std::string expression_string_18="S-SF-SH";
-    std::string expression_string_19="PO-1.6371";
-    std::string expression_string_20="RSTAR-0.04";
-    std::string expression_string_21="0.05*KG-0";
-    std::string expression_string_22="POSUB-0.5";
-    std::string expression_string_23="O-0.4819";
-    std::string expression_string_24="G-0.01398";
-
+    std::string expression_string_0  = "E-alpha*OE-beta*G-gamma*RNW";
+    std::string expression_string_1  = "PE-1/alpha*POSUB";
+    std::string expression_string_2  = "PG-beta/alpha*POSUB";
+    std::string expression_string_3  = "PRNW-gamma/alpha*POSUB";
+    std::string expression_string_4  = "S-(a*E^lambda+(1-a)*OS^lambda)^(1/lambda)";
+    std::string expression_string_5  = "PS-POSUB*(OS^(1-lambda))/(1-a)*(a*E^lambda+(1-a)*OS^lambda)^((lambda-1)/lambda)";
+    std::string expression_string_6  = "PS-PE*(E^(1-lambda))/a*(a*E^lambda+(1-a)*OS^lambda)^((lambda-1)/lambda)";
+    std::string expression_string_7  = "W-theta*N^(theta-1)*((1-b)*KP^niu+b*SF^niu)^((1-theta)/niu)";
+    std::string expression_string_8  = "R-(1-theta)*(1-b)*KP^(niu-1)*N^theta*((1-b)*KP^niu+b*SF^niu)^((1-theta)/niu-1)";
+    std::string expression_string_9  = "PS-(1-theta)*b*SF^(niu-1)*N^theta*((1-b)*KP^niu+b*SF^niu)^((1-theta)/niu-1)";
+    std::string expression_string_10 = "N-1";
+    std::string expression_string_11 = "PS-d*(SH/C)^(sigmac-1)";
+    std::string expression_string_12 = "(B-(1+RSTAR)*B)-bss*(Y+PO*(O-OE-OS))";
+    std::string expression_string_13 = "1-betadisc*(1-delta+R)";
+    std::string expression_string_14 = "B+KP-(1-delta)*KP+C+PS*SH-W*N-R*KP-(1+RSTAR)*B-TR";
+    std::string expression_string_15 = "PRNW*RNW+POSUB*(OS+OE)+PO*(O-OS-OE)+PG*G-TR-igexg";
+    std::string expression_string_16 = "RNW-A/(1+integcost*RNW/E)*KG";
+    std::string expression_string_17 = "S-SF-SH";
+    std::string expression_string_18 = "PO-poaverage";
+    std::string expression_string_19 = "RSTAR-RBAR";
+    std::string expression_string_20 = "nu*KG-igexg";
+    std::string expression_string_21 = "POSUB-posubexg";
+    std::string expression_string_22 = "O-oexg";
+    std::string expression_string_23 = "G-gexg";
+    std::string expression_string_24 = "Y-N^theta*((1-b)*KP^niu+b*SF^niu)^((1-theta)/niu)";
 
     vector<double> z;
     for(int i=0 ; i < x.length(); ++i) {
         z.push_back(x[i]);
     }
 
-    //double x0 = x[0];
-    //double x1 = x[1];
-    
+    typedef exprtk::symbol_table<double> symbol_table_t;
+    typedef exprtk::expression<double>     expression_t;
+    typedef exprtk::parser<double>             parser_t;
+
     //OE0,E0,G0,RNW0,PE0,POSUB0,PG0,PRNW0,S0,OS0,PS0,N0,KP0,SF0,W0,R0,SH0,C0,RSTAR0,TR0,PO0,B0,O0,KG0,Y0
     symbol_table_t symbol_table;
     symbol_table.add_variable("OE",    z[0]);
@@ -89,6 +103,68 @@ void  function1_fvec(const real_1d_array &x, real_1d_array &fi, void *ptr)
     symbol_table.add_variable("KG",    z[23]);
     symbol_table.add_variable("Y",     z[24]);
 
+    double alpha=0.32;
+    double beta=0.42;
+    double gamma=1;
+    double a=0.33230;
+    double lambda=-0.25786;
+    double niu=-1.381;
+    double theta=0.58221;
+    double b=0.00003;
+    double d=0.0028;
+    double sigmac=-1.0/3.0; // Note: 1/3 results into 0 because of integer division rule
+    double omega=0.0735;
+    double sigma=2;
+    double tau=1;
+    double phi=0;
+    double betadisc=0.96;
+    double delta=0.1;
+    double nu=0.05;
+    double poaverage=1.6371;
+    double A=0.0328;
+    double rho=0.9;
+    double RBAR=0.04;
+    double bss=0.16;
+    double psi=0;
+    double gexg=0.01398;
+    double oexg=0.4819;
+    double posubexg=0.5;
+    double integcost=0.5;
+    double igexg = 0;
+
+    symbol_table.add_constant("alpha",alpha);
+    symbol_table.add_constant("beta",beta);
+    symbol_table.add_constant("gamma",gamma);
+    symbol_table.add_constant("a",a);
+    symbol_table.add_constant("lambda",lambda);
+    symbol_table.add_constant("theta",theta);
+    symbol_table.add_constant("niu",niu);
+    if(!symbol_table.add_constant("b",b)) {
+        cout << "A symbol name for variable 'B' was added previously. To add new symbol 'b', define the macro exprtk_disable_caseinsensitivity in exprtk. " << endl;
+    }
+    symbol_table.add_constant("d",d);
+    symbol_table.add_constant("sigmac",sigmac);
+    symbol_table.add_constant("sigma",sigma);
+    symbol_table.add_constant("omega",omega);
+    symbol_table.add_constant("tau",tau);
+    symbol_table.add_constant("phi",phi);
+    symbol_table.add_constant("betadisc",betadisc);
+    symbol_table.add_constant("delta",delta);
+    symbol_table.add_constant("nu",nu);
+    symbol_table.add_constant("poaverage",poaverage);
+    if(!symbol_table.add_constant("A",A)) {
+        cout << "A symbol name for variable 'a' was added previously. To add new symbol 'A', define the macro exprtk_disable_caseinsensitivity in exprtk. " << endl;
+    }
+    symbol_table.add_constant("rho",rho);
+    symbol_table.add_constant("RBAR",RBAR);
+    symbol_table.add_constant("bss",bss);
+    symbol_table.add_constant("psi",psi);
+    symbol_table.add_constant("gexg",gexg);
+    symbol_table.add_constant("oexg",oexg);
+    symbol_table.add_constant("posubexg",posubexg);
+    symbol_table.add_constant("integcost",integcost);
+    symbol_table.add_constant("igexg",igexg);
+
     symbol_table.add_constants();
 
     expression_t expression0;
@@ -115,7 +191,7 @@ void  function1_fvec(const real_1d_array &x, real_1d_array &fi, void *ptr)
     expression_t expression21;
     expression_t expression22;
     expression_t expression23;
-    expression_t expression24;	
+    expression_t expression24;
 
 	expression0.register_symbol_table(symbol_table);
     expression1.register_symbol_table(symbol_table);
@@ -206,15 +282,12 @@ void  function1_fvec(const real_1d_array &x, real_1d_array &fi, void *ptr)
 int main(int argc, char **argv)
 {
     //
-    // This example demonstrates minimization of F(x0,x1) = f0^2+f1^2, where 
-    //
-    //     f0(x0,x1) = 10*(x0+3)^2
-    //     f1(x0,x1) = (x1-3)^2
+    // This example demonstrates minimization of F(x0,x1) = f0^2+f1^2+...+fn^2
     //
     // using "V" mode of the Levenberg-Marquardt optimizer.
     //
     // Optimization algorithm uses:
-    // * function vector f[] = {f1,f2}
+    // * function vector f[] = {f1,f2,...,fn}
     //
     // No other information (Jacobian, gradient, etc.) is needed.
     //
@@ -230,7 +303,6 @@ int main(int argc, char **argv)
     minlmstate state;
     minlmreport rep;
 
-    //minlmcreatev(25, x, 0.000001, state);
     minlmcreatev(25, 25, x, 0.000001, state);
     minlmsetcond(state, epsx, maxits);
 
@@ -242,5 +314,6 @@ int main(int argc, char **argv)
     for(int index=0; index < x.length(); ++index) {
         printf("%.4f\t", x[index]);
     }
+
     return 0;
 }
