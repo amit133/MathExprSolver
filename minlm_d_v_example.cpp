@@ -10,10 +10,18 @@ using namespace std;
 
 using namespace alglib;
 
-    typedef std::string paramName;
-    typedef double paramValue;
-    typedef std::map<paramName, paramValue> parameters;
-    parameters params;
+typedef std::string paramName;
+typedef double paramValue;
+typedef std::map<paramName, paramValue> parameters;
+parameters params;
+
+typedef exprtk::expression<double>     expression_t;
+std::vector<expression_t> expressions;
+
+// An intermediate vector z is required because input parameter x in the callback function of optimization algorithm is a const which causes error in compilation
+// Size of this vector needs to be fixed. Keeping it dynamic causes runtime trouble (neither error nor crash) with symbol table of exprtk library.
+// I think it is due to change in location of vector in memory if the vector undergoes a change in its size due to push back operation.
+vector<double> z; // Rename z to some meaningful name
 
 void setParameters() {
     // Each parameter's name and value would come from the xml
@@ -107,13 +115,7 @@ void setParameters() {
     params.insert(parameters::value_type( igexg    , std::stod( igexg_Value     )));
 }
 
-void  function1_fvec(const real_1d_array &x, real_1d_array &fi, void *ptr)
-{
-
-    //
-    // this callback calculates the values of expressions as per the inputs passed by optimization algorithm
-    //
-
+void setMathExpressions() {
     typedef std::string equation;
     typedef std::vector<equation> equations;
     equations systemOfEquations;
@@ -202,24 +204,14 @@ void  function1_fvec(const real_1d_array &x, real_1d_array &fi, void *ptr)
     vars.push_back(KG);
     vars.push_back(Y);
 
-    // Confirm that the length of the vector vars is equal to the length of input real_1d_array x
-    assert(vars.size() == x.length());
-
     typedef exprtk::symbol_table<double> symbol_table_t;
-    typedef exprtk::expression<double>     expression_t;
-    typedef exprtk::parser<double>             parser_t;
+    z.resize(vars.size());
 
-    //OE0,E0,G0,RNW0,PE0,POSUB0,PG0,PRNW0,S0,OS0,PS0,N0,KP0,SF0,W0,R0,SH0,C0,RSTAR0,TR0,PO0,B0,O0,KG0,Y0
     symbol_table_t symbol_table;
 
-    // A temporary vector z is required because input parameter x is a const which causes error in compilation
-    // Size of this vector needs to be fixed. Keeping it dynamic causes runtime trouble (neither error nor crash) with symbol table of exprtk library.
-    // I think it is due to change in location of vector in memory if the vector undergoes a change in its size due to push back operation.
-    vector<double> z(x.length(), 0.0);
-
-    for(int i=0 ; i < x.length() /* or vars.size() */; ++i) {
+    for(int i=0 ; i < vars.size() ; ++i) {
         // z.push_back(x[i]); // push_back() can't be used because symbol_table.add_variable() takes a reference to double type of variable
-        z[i] = x[i];
+        //z[i] = x[i];
         symbol_table.add_variable(vars[i],     z[i]);
     }
  
@@ -231,8 +223,9 @@ void  function1_fvec(const real_1d_array &x, real_1d_array &fi, void *ptr)
 
     symbol_table.add_constants();
 
+    typedef exprtk::parser<double> parser_t;
     parser_t parser;
-    std::vector<expression_t> expressions;
+
     size_t equationsCount =  systemOfEquations.size();
 
     for(int i = 0; i < equationsCount /* Note: count of equations under <optimize> tag of xml*/; ++i) {
@@ -240,16 +233,32 @@ void  function1_fvec(const real_1d_array &x, real_1d_array &fi, void *ptr)
         expressions[i].register_symbol_table(symbol_table);
         parser.compile(systemOfEquations[i] , expressions[i]);
     }
+}
 
-    // expression_t expression;
-    // expression.register_symbol_table(symbol_table);
+void  function1_fvec(const real_1d_array &x, real_1d_array &fi, void *ptr)
+{
 
-    for(int i = 0; i < equationsCount /* Note: count of equations under <optimize> tag of xml*/; ++i) {
-        fi[i] = expressions[i].value();
+    //
+    // this callback calculates the values of expressions as per the inputs passed by optimization algorithm
+    //
+
+    // Confirm that the length of the number of expressions is equal to the length of input real_1d_array x
+    assert(expressions.size() == x.length());
+
+    // A non-const vector z is required because input parameter x is a const which causes c++ error in code compilation
+    // Size of this vector needs to be fixed and equal to that of the number of variables ( which is also equal to number of equations
+    // and the size of the input real_1d_array x in this callback method.
+    // Keeping it dynamic causes runtime trouble (neither error nor crash) with symbol table of exprtk library.
+    // I think it is due to change in location of vector in memory if the vector undergoes a change in its size due to push back operation.
+    // We can't use push_back() method as the referenece to individual members of z are given to the symbol table.
+    for(int i=0 ; i < x.length() ; ++i) {
+        z[i] = x[i]; // Values of z are used to evaluate the expression values
     }
 
-    for(int k = 0; k < 25; ++k) {
-        cout << "fi[" << k <<  "] = " << fi[k] << endl;
+    size_t equationsCount =  expressions.size();
+    for(size_t i = 0; i < equationsCount /* Note: count of equations under <optimize> tag of xml*/; ++i) {
+        fi[i] = expressions[i].value();
+        cout << "fi[" << i <<  "] = " << fi[i] << endl;
     }
 }
 
@@ -268,6 +277,8 @@ int main(int argc, char **argv)
     
     // Read all parameter values
     setParameters();
+
+    setMathExpressions();
     
     //OE0,E0,G0,RNW0,PE0,POSUB0,PG0,PRNW0,S0,OS0,PS0,N0,KP0,SF0,W0,R0,SH0,C0,RSTAR0,TR0,PO0,B0,O0,KG0,Y0
     real_1d_array x = "[0.0305, 0.0156, 0.0140, 0, 1.5625, 0.5000, 0.6563, 1.5625, 0.0389, 0.0673, 1.4932, 1.0000, \
