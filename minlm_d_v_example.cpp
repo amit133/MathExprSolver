@@ -10,18 +10,252 @@ using namespace std;
 
 using namespace alglib;
 
+typedef exprtk::expression<double>     expression_t;
+std::vector<expression_t> expressions;
+
+typedef exprtk::symbol_table<double> symbol_table_t;
+symbol_table_t symbol_table;
+
+
+typedef std::string policyName;
+typedef double policyValue;
+typedef std::map<policyName, policyValue> policies;
+policies policyWeights;
+std::vector<policyName> listOfPolicyNames;
+
 typedef std::string paramName;
 typedef double paramValue;
 typedef std::map<paramName, paramValue> parameters;
 parameters params;
 
-typedef exprtk::expression<double>     expression_t;
-std::vector<expression_t> expressions;
+typedef std::vector<std::string> variables;
+variables vars;// = {"OE","E","G","RNW","PE","S","OS","PS","N","KP","SF","W","R","SH","C","RSTAR","TR","PO","B","O","KG","Y","POSUB","PG","PRNW"};
 
 // An intermediate vector z is required because input parameter x in the callback function of optimization algorithm is a const which causes error in compilation
 // Size of this vector needs to be fixed. Keeping it dynamic causes runtime trouble (neither error nor crash) with symbol table of exprtk library.
 // I think it is due to change in location of vector in memory if the vector undergoes a change in its size due to push back operation.
 vector<double> z; // Rename z to some meaningful name
+
+    typedef std::string variableName;
+    typedef double variableValue;
+    typedef std::map<variableName, variableValue> valuesOfVars;
+    valuesOfVars initValuesOfVars;
+
+    typedef std::string varName;
+    std::vector<varName> listOfVars;
+
+void setInitValuesOfVars() {
+    //OE0,N0,KP0,C0,E0,G0,RNW0,PE0,OS0,S0,PS0,SF0,W0,R0,SH0,RSTAR0,TR0,PO0,B0,O0,KG0,Y0,POSUB0,PG0,PRNW0
+    varName OE0      =  "OE0";
+    varName N0       =  "N0";
+    varName KP0      =  "KP0";
+    varName C0       =  "C0";
+    varName E0       =  "E0";
+    varName G0       =  "G0";
+    varName RNW0     =  "RNW0";
+    varName PE0      =  "PE0";
+    varName OS0      =  "OS0";
+    varName S0       =  "S0";
+    varName PS0      =  "PS0";
+    varName SF0      =  "SF0";
+    varName W0       =  "W0";
+    varName R0       =  "R0";
+    varName SH0      =  "SH0";
+    varName RSTAR0   =  "RSTAR0";
+    varName TR0      =  "TR0";
+    varName PO0      =  "PO0";
+    varName B0       =  "B0";
+    varName O0       =  "O0";
+    varName KG0      =  "KG0";
+    varName Y0       =  "Y0";
+
+    listOfVars.push_back( OE0   );
+    listOfVars.push_back( N0    );
+    listOfVars.push_back( KP0   );
+    listOfVars.push_back( C0    );
+    listOfVars.push_back( E0    );
+    listOfVars.push_back( G0    );
+    listOfVars.push_back( RNW0  );
+    listOfVars.push_back( PE0   );
+    listOfVars.push_back( OS0   );
+    listOfVars.push_back( S0    );
+    listOfVars.push_back( PS0   );
+    listOfVars.push_back( SF0   );
+    listOfVars.push_back( W0    );
+    listOfVars.push_back( R0    );
+    listOfVars.push_back( SH0   );
+    listOfVars.push_back( RSTAR0);
+    listOfVars.push_back( TR0   );
+    listOfVars.push_back( PO0   );
+    listOfVars.push_back( B0    );
+    listOfVars.push_back( O0    );
+    listOfVars.push_back( KG0   );
+    listOfVars.push_back( Y0    );
+
+    typedef std::string initValExpr;
+    initValExpr OE0_expr      =  "0.0305";
+    initValExpr N0_expr       =  "1";
+    initValExpr KP0_expr      =  "5.6246";
+    initValExpr C0_expr       =  ".9363";
+    initValExpr E0_expr       =  "alpha*OE0+beta*gexg+gamma*A*igexg/nu";
+    initValExpr G0_expr       =  "gexg";
+    initValExpr RNW0_expr     =  "A*igexg/nu";
+    initValExpr PE0_expr      =  "1/alpha*posubexg";
+    initValExpr OS0_expr      =  "E0*((1-a)/(alpha*a))^(1/(1-lambda))";
+    initValExpr S0_expr       =  "(a*E0^lambda+(1-a)*OS0^lambda)^(1/lambda)";
+    initValExpr PS0_expr      =  "PE0/a*(E0^(1-lambda))*S0^(lambda-1)";
+    initValExpr SF0_expr      =  "KP0*(((RBAR+delta)*b)/(PS0*(1-b)))^(1/(1-niu))";
+    initValExpr W0_expr       =  "theta*N0^(theta-1)*((1-b)*KP0^niu+b*SF0^niu)^((1-theta)/niu)";
+    initValExpr R0_expr       =  "RBAR+delta";
+    initValExpr SH0_expr      =  "S0-SF0";
+    initValExpr RSTAR0_expr   =  "RBAR";
+    initValExpr TR0_expr      =  "PRNW0*RNW0+POSUB0*(OS0+OE0)+poaverage*(oexg-OS0-OE0)+PG0*gexg-igexg";
+    initValExpr PO0_expr      =  "poaverage";
+    initValExpr B0_expr       =  "-bss/RBAR*N0^theta*((1-b)*KP0^niu+b*SF0^niu)^((1-theta)/niu)";
+    initValExpr O0_expr       =  "oexg";
+    initValExpr KG0_expr      =  "igexg/nu";
+    initValExpr Y0_expr       =  "N0^theta*((1-b)*KP0^niu+b*SF0^niu)^((1-theta)/niu)";
+
+    typedef std::string initComputeExpr;
+    typedef std::map<varName, initComputeExpr> initValExprMap;
+    initValExprMap initValExpressions;
+
+    // The push_back() calls would run in a loop when xml reading comes into play
+    initValExpressions[OE0]    = OE0_expr   ;
+    initValExpressions[N0]     = N0_expr    ;
+    initValExpressions[KP0]    = KP0_expr   ;
+    initValExpressions[C0]     = C0_expr    ;
+    initValExpressions[E0]     = E0_expr    ;
+    initValExpressions[G0]     = G0_expr    ;
+    initValExpressions[RNW0]   = RNW0_expr  ;
+    initValExpressions[PE0]    = PE0_expr   ;
+    initValExpressions[OS0]    = OS0_expr   ;
+    initValExpressions[S0]     = S0_expr    ;
+    initValExpressions[PS0]    = PS0_expr   ;
+    initValExpressions[SF0]    = SF0_expr   ;
+    initValExpressions[W0]     = W0_expr    ;
+    initValExpressions[R0]     = R0_expr    ;
+    initValExpressions[SH0]    = SH0_expr   ;
+    initValExpressions[RSTAR0] = RSTAR0_expr;
+    initValExpressions[TR0]    = TR0_expr   ;
+    initValExpressions[PO0]    = PO0_expr   ;
+    initValExpressions[B0]     = B0_expr    ;
+    initValExpressions[O0]     = O0_expr    ;
+    initValExpressions[KG0]    = KG0_expr   ;
+    initValExpressions[Y0]     = Y0_expr    ;
+
+    // The map would be populated in a loop when xml reading comes into play
+	initValuesOfVars[OE0]       = 0.0;
+    initValuesOfVars[E0]        = 0.0;
+    initValuesOfVars[G0]        = 0.0;
+    initValuesOfVars[RNW0]      = 0.0;
+    initValuesOfVars[PE0]       = 0.0;
+    initValuesOfVars[S0]        = 0.0;
+    initValuesOfVars[OS0]       = 0.0;
+    initValuesOfVars[PS0]       = 0.0;
+    initValuesOfVars[N0]        = 0.0;
+    initValuesOfVars[KP0]       = 0.0;
+    initValuesOfVars[SF0]       = 0.0;
+    initValuesOfVars[W0]        = 0.0;
+    initValuesOfVars[R0]        = 0.0;
+    initValuesOfVars[SH0]       = 0.0;
+    initValuesOfVars[C0]        = 0.0;
+    initValuesOfVars[RSTAR0]    = 0.0;
+    initValuesOfVars[TR0]       = 0.0;
+    initValuesOfVars[PO0]       = 0.0;
+    initValuesOfVars[B0]        = 0.0;
+    initValuesOfVars[O0]        = 0.0;
+    initValuesOfVars[KG0]       = 0.0;
+    initValuesOfVars[Y0]        = 0.0;
+
+    symbol_table_t symbol_table_initvals;
+    symbol_table_initvals.add_constants();
+
+    typedef exprtk::details::variable_node<double> exprtk_var_ptr;
+ 
+    for(auto param : params) {
+        symbol_table_initvals.add_constant(param.first, param.second);
+        exprtk_var_ptr *v = symbol_table_initvals.get_variable(param.first);
+        //cout << "Symbol name: " << param.first << ", symbol value: " << v->value() << endl;
+    }
+
+    for(auto policy : policyWeights) {
+        symbol_table_initvals.add_constant(policy.first, policy.second);
+        exprtk_var_ptr *v = symbol_table_initvals.get_variable(policy.first);
+        //cout << "Symbol name: " << policy.first << ", symbol value: " << v->value() << endl;
+    }
+    
+    typedef exprtk::parser<double> parser_t;
+    parser_t parser;
+
+    expression_t expr;
+    expr.register_symbol_table(symbol_table_initvals);
+
+    for(auto var : listOfVars) {
+        //cout << "Variable: " << var << ", Expression: " << initValExpressions[var] << endl;
+        parser.compile(initValExpressions[var] , expr);
+
+        // evaluate the expression and store in the map for the values of each variable
+        initValuesOfVars[var] = expr.value();
+        symbol_table_initvals.add_constant(var, initValuesOfVars[var]);
+        //cout << "Variable: " << var << " , Init Value: " << initValuesOfVars[var] << endl;
+    }
+}
+
+void setPolicyWeights() {
+	string POSUB0     = "POSUB0";
+    string PG0        = "PG0";
+    string PRNW0      = "PRNW0";
+    string igexg      = "igexg";
+    string laborShare = "laborShare";
+
+	string POSUB0_value     = "0.5";
+    string PG0_value        = "0.6563";
+    string PRNW0_value      = "1.5625";
+    string igexg_value      = "0";
+    string laborShare_value = "0.5";
+
+    // Push the variables in listOfVars. Make sure to call setInitValuesOfVars() before this function
+    // Else the order of the variables would be different and the output of the program would be wrong
+    listOfPolicyNames.push_back( POSUB0 );
+    listOfPolicyNames.push_back( PG0    );
+    listOfPolicyNames.push_back( PRNW0  );
+
+    policyWeights.insert(policies::value_type( POSUB0     , std::stod( POSUB0_value     )));
+    policyWeights.insert(policies::value_type( PG0        , std::stod( PG0_value        )));
+    policyWeights.insert(policies::value_type( PRNW0      , std::stod( PRNW0_value      )));
+    policyWeights.insert(policies::value_type( igexg      , std::stod( igexg_value      )));
+    policyWeights.insert(policies::value_type( laborShare , std::stod( laborShare_value )));
+
+    for(auto policy : policyWeights) {
+        symbol_table.add_constant(policy.first, policy.second);
+    }
+}
+
+// Make sure to call setInitValuesOfVars() and setPolicyWeights() before calling this function
+std::string getInitValues() {
+    assert(!vars.empty());
+
+    string initVals ("[");
+    //for(auto varName : listOfVars) { // This option of for loop has to rechecked
+    for(auto varName : vars) {
+        //initVals += std::to_string(initValuesOfVars[varName + string("0")]) + ","; // This code looks more apt instead of that in try-catch block
+        try {
+            initVals += std::to_string(initValuesOfVars.at(varName + string("0"))) + ",";
+        } catch(...) {
+            // Note: The key is not present in the map. Do nothing and let the loop continue
+        }
+    }
+
+    for(auto policyName : listOfPolicyNames) {
+        initVals += std::to_string(policyWeights[policyName]) + ",";
+    }
+
+    initVals.back() = ']';
+
+    //cout << "Init Vals: " << initVals << endl;
+    return initVals;
+}
 
 void setParameters() {
     // Each parameter's name and value would come from the xml
@@ -83,7 +317,6 @@ void setParameters() {
     string oexg_Value         =    "0.4819";
     string posubexg_Value     =    "0.5";
     string integcost_Value    =    "0.5";
-    string igexg_Value        =    "0";
 
     params.insert(parameters::value_type( alpha    , std::stod( alpha_Value     )));
     params.insert(parameters::value_type( beta     , std::stod( beta_Value      )));
@@ -112,7 +345,69 @@ void setParameters() {
     params.insert(parameters::value_type( oexg     , std::stod( oexg_Value      )));
     params.insert(parameters::value_type( posubexg , std::stod( posubexg_Value  )));
     params.insert(parameters::value_type( integcost, std::stod( integcost_Value )));
-    params.insert(parameters::value_type( igexg    , std::stod( igexg_Value     )));
+
+    for(auto param : params) {
+        symbol_table.add_constant(param.first, param.second);
+    }
+}
+
+void setVarNames() {
+    // Variables' names would be read from the xml file. The count of these variables would be unknown.
+    std::string OE = "OE";
+    std::string E = "E";
+    std::string G = "G";
+    std::string RNW = "RNW";
+    std::string PE = "PE";
+    std::string POSUB = "POSUB";
+    std::string PG = "PG";
+    std::string PRNW = "PRNW";
+    std::string S = "S";
+    std::string OS = "OS";
+    std::string PS = "PS";
+    std::string N = "N";
+    std::string KP = "KP";
+    std::string SF = "SF";
+    std::string W = "W";
+    std::string R = "R";
+    std::string SH = "SH";
+    std::string C = "C";
+    std::string RSTAR = "RSTAR";
+    std::string TR = "TR";
+    std::string PO = "PO";
+    std::string B = "B";
+    std::string O = "O";
+    std::string KG = "KG";
+    std::string Y = "Y";
+
+    // The push_back() calls would run in a loop when xml reading comes into play
+    //OE0,N0,KP0,C0,E0,G0,RNW0,PE0,OS0,S0,PS0,SF0,W0,R0,SH0,RSTAR0,TR0,PO0,B0,O0,KG0,Y0,POSUB0,PG0,PRNW0
+    vars.push_back(OE);
+    vars.push_back(E);
+    vars.push_back(G);
+    vars.push_back(RNW);
+    vars.push_back(PE);
+    vars.push_back(S);
+    vars.push_back(OS);
+    vars.push_back(PS);
+    vars.push_back(N);
+    vars.push_back(KP);
+    vars.push_back(SF);
+    vars.push_back(W);
+    vars.push_back(R);
+    vars.push_back(SH);
+    vars.push_back(C);
+    vars.push_back(RSTAR);
+    vars.push_back(TR);
+    vars.push_back(PO);
+    vars.push_back(B);
+    vars.push_back(O);
+    vars.push_back(KG);
+    vars.push_back(Y);
+
+    // Policy variables. Note that the sequence is different from that in the matlab code
+    vars.push_back(POSUB);
+    vars.push_back(PG);
+    vars.push_back(PRNW);
 }
 
 void setMathExpressions() {
@@ -147,80 +442,12 @@ void setMathExpressions() {
     systemOfEquations.push_back("G-gexg");
     systemOfEquations.push_back("Y-N^theta*((1-b)*KP^niu+b*SF^niu)^((1-theta)/niu)");
 
-    // Variables' names would be read from the xml file. The count of these variables would be unknown.
-    std::string OE = "OE";
-    std::string E = "E";
-    std::string G = "G";
-    std::string RNW = "RNW";
-    std::string PE = "PE";
-    std::string POSUB = "POSUB";
-    std::string PG = "PG";
-    std::string PRNW = "PRNW";
-    std::string S = "S";
-    std::string OS = "OS";
-    std::string PS = "PS";
-    std::string N = "N";
-    std::string KP = "KP";
-    std::string SF = "SF";
-    std::string W = "W";
-    std::string R = "R";
-    std::string SH = "SH";
-    std::string C = "C";
-    std::string RSTAR = "RSTAR";
-    std::string TR = "TR";
-    std::string PO = "PO";
-    std::string B = "B";
-    std::string O = "O";
-    std::string KG = "KG";
-    std::string Y = "Y";
-
-    typedef std::vector<std::string> variables;
-    variables vars;// = {"OE","E","G","RNW","PE","POSUB","PG","PRNW","S","OS","PS","N","KP","SF","W","R","SH","C","RSTAR","TR","PO","B","O","KG","Y"};
-
-    // The push_back() calls would run in a loop when xml reading comes into play
-    vars.push_back(OE);
-    vars.push_back(E);
-    vars.push_back(G);
-    vars.push_back(RNW);
-    vars.push_back(PE);
-    vars.push_back(POSUB);
-    vars.push_back(PG);
-    vars.push_back(PRNW);
-    vars.push_back(S);
-    vars.push_back(OS);
-    vars.push_back(PS);
-    vars.push_back(N);
-    vars.push_back(KP);
-    vars.push_back(SF);
-    vars.push_back(W);
-    vars.push_back(R);
-    vars.push_back(SH);
-    vars.push_back(C);
-    vars.push_back(RSTAR);
-    vars.push_back(TR);
-    vars.push_back(PO);
-    vars.push_back(B);
-    vars.push_back(O);
-    vars.push_back(KG);
-    vars.push_back(Y);
-
-    typedef exprtk::symbol_table<double> symbol_table_t;
     z.resize(vars.size());
 
-    symbol_table_t symbol_table;
-
     for(int i=0 ; i < vars.size() ; ++i) {
-        // z.push_back(x[i]); // push_back() can't be used because symbol_table.add_variable() takes a reference to double type of variable
-        //z[i] = x[i];
         symbol_table.add_variable(vars[i],     z[i]);
     }
  
-    parameters::iterator paramsItr = params.begin();
-    parameters::iterator paramsEndItr = params.end();
-    for(; paramsItr != paramsEndItr; ++paramsItr) {
-        symbol_table.add_constant(paramsItr->first, paramsItr->second);
-    }
-
     symbol_table.add_constants();
 
     typedef exprtk::parser<double> parser_t;
@@ -257,9 +484,10 @@ void  function1_fvec(const real_1d_array &x, real_1d_array &fi, void *ptr)
 
     size_t equationsCount =  expressions.size();
     for(size_t i = 0; i < equationsCount /* Note: count of equations under <optimize> tag of xml*/; ++i) {
-        fi[i] = expressions[i].value();
+        fi[i] = expressions[i].value(); // this evaluation uses the vector z which was mapped in the symbol table of expressions
         cout << "fi[" << i <<  "] = " << fi[i] << endl;
     }
+    cout << endl;
 }
 
 int main(int argc, char **argv)
@@ -275,14 +503,33 @@ int main(int argc, char **argv)
     // No other information (Jacobian, gradient, etc.) is needed.
     //
     
+    setVarNames();
+   
     // Read all parameter values
     setParameters();
 
+    setPolicyWeights();
+
+    setInitValuesOfVars();
+
+    string initValuesOfVars = getInitValues();
+    //cout << "Init Vals: " << initValuesOfVars << endl;
+
     setMathExpressions();
-    
+
     //OE0,E0,G0,RNW0,PE0,POSUB0,PG0,PRNW0,S0,OS0,PS0,N0,KP0,SF0,W0,R0,SH0,C0,RSTAR0,TR0,PO0,B0,O0,KG0,Y0
-    real_1d_array x = "[0.0305, 0.0156, 0.0140, 0, 1.5625, 0.5000, 0.6563, 1.5625, 0.0389, 0.0673, 1.4932, 1.0000, \
-    5.6246, 0.0262, 1.1806, 0.1400, 0.0127, 0.9363, 0.0400, 0.6868, 1.6371, -8.1109, 0.4819, 0, 2.0277]";
+    //real_1d_array x = "[0.0305, 0.0156, 0.0140, 0, 1.5625, 0.5000, 0.6563, 1.5625, 0.0389, 0.0673, 1.4932, 1.0000, \
+    //5.6246, 0.0262, 1.1806, 0.1400, 0.0127, 0.9363, 0.0400, 0.6868, 1.6371, -8.1109, 0.4819, 0, 2.0277]";
+
+    //OE0,E0,G0,RNW0,PE0,S0,OS0,PS0,N0,KP0,SF0,W0,R0,SH0,C0,RSTAR0,TR0,PO0,B0,O0,KG0,Y0,POSUB0,PG0,PRNW0
+    //real_1d_array x = "[0.0305, 0.0156, 0.0140, 0, 1.5625, 0.0389, 0.0673, 1.4932, 1.0000, \
+    //5.6246, 0.0262, 1.1806, 0.1400, 0.0127, 0.9363, 0.0400, 0.6868, 1.6371, -8.1109, 0.4819, 0, 2.0277, 0.5000, 0.6563, 1.5625]";
+                      //  "[0.030500,1.000000,5.624600,0.936300,0.015632,0.013980,0.000000,1.562500,
+                      //  0.067350,0.038908,1.493231,0.026229,1.180557,0.140000,0.012680,0.040000,0.686829,
+                      //  1.637100,-8.110867,0.481900,0.000000,2.027717,0.500000,0.656300,1.562500]"
+    //OE0,N0,KP0,C0,E0,G0,RNW0,PE0,OS0,S0,PS0,SF0,W0,R0,SH0,RSTAR0,TR0,PO0,B0,O0,KG0,Y0,POSUB0,PG0,PRNW0
+
+    real_1d_array x = initValuesOfVars.c_str();
     double epsx = 0.0000000001;
     ae_int_t maxits = 0;
     minlmstate state;
@@ -296,6 +543,7 @@ int main(int argc, char **argv)
     minlmresults(state, x, rep);
 
     cout << "x.length " << x.length() << endl;
+    cout << "Solution set: ";
     for(int index=0; index < x.length(); ++index) {
         printf("%.4f\t", x[index]);
     }
