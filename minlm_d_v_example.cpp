@@ -36,13 +36,15 @@ variables vars;// = {"OE","E","G","RNW","PE","S","OS","PS","N","KP","SF","W","R"
 // I think it is due to change in location of vector in memory if the vector undergoes a change in its size due to push back operation.
 vector<double> z; // Rename z to some meaningful name
 
-    typedef std::string variableName;
-    typedef double variableValue;
-    typedef std::map<variableName, variableValue> valuesOfVars;
-    valuesOfVars initValuesOfVars;
+typedef std::string variableName;
+typedef double variableValue;
+typedef std::map<variableName, variableValue> valuesOfVars;
+valuesOfVars initValuesOfVars;
 
-    typedef std::string varName;
-    std::vector<varName> listOfVars;
+typedef std::string varName;
+std::vector<varName> listOfVars;
+
+typedef exprtk::parser<double> parser_t;
 
 void setInitValuesOfVars() {
     //OE0,N0,KP0,C0,E0,G0,RNW0,PE0,OS0,S0,PS0,SF0,W0,R0,SH0,RSTAR0,TR0,PO0,B0,O0,KG0,Y0,POSUB0,PG0,PRNW0
@@ -185,7 +187,7 @@ void setInitValuesOfVars() {
         //cout << "Symbol name: " << policy.first << ", symbol value: " << v->value() << endl;
     }
     
-    typedef exprtk::parser<double> parser_t;
+    // typedef exprtk::parser<double> parser_t;
     parser_t parser;
 
     expression_t expr;
@@ -197,7 +199,9 @@ void setInitValuesOfVars() {
 
         // evaluate the expression and store in the map for the values of each variable
         initValuesOfVars[var] = expr.value();
-        symbol_table_initvals.add_constant(var, initValuesOfVars[var]);
+
+        // Add each constant name with its value in the symbol table
+        symbol_table_initvals.add_constant(var, initValuesOfVars.at(var));
         //cout << "Variable: " << var << " , Init Value: " << initValuesOfVars[var] << endl;
     }
 }
@@ -237,11 +241,12 @@ std::string getInitValues() {
     assert(!vars.empty());
 
     string initVals ("[");
-    //for(auto varName : listOfVars) { // This option of for loop has to rechecked
-    for(auto varName : vars) {
+    for(auto var : listOfVars) { // This option of for loop has to rechecked
+    //for(auto var : vars) {
         //initVals += std::to_string(initValuesOfVars[varName + string("0")]) + ","; // This code looks more apt instead of that in try-catch block
         try {
-            initVals += std::to_string(initValuesOfVars.at(varName + string("0"))) + ",";
+            // initVals += std::to_string(initValuesOfVars.at(var + string("0"))) + ",";
+            initVals += std::to_string(initValuesOfVars.at(var)) + ",";
         } catch(...) {
             // Note: The key is not present in the map. Do nothing and let the loop continue
         }
@@ -442,15 +447,25 @@ void setMathExpressions() {
     systemOfEquations.push_back("G-gexg");
     systemOfEquations.push_back("Y-N^theta*((1-b)*KP^niu+b*SF^niu)^((1-theta)/niu)");
 
-    z.resize(vars.size());
+    // z.resize(vars.size());
 
-    for(int i=0 ; i < vars.size() ; ++i) {
-        symbol_table.add_variable(vars[i],     z[i]);
-    }
+    // for(int i=0 ; i < vars.size() ; ++i) {
+    //     symbol_table.add_variable(vars[i],     z[i]);
+    // }
  
+    z.resize(listOfVars.size() + 3);
+    int i=0;
+    for( ; i < z.size()-3 ; ++i) {
+        cout << "z is set to: " << listOfVars[i] << " " << endl;
+        symbol_table.add_variable(listOfVars[i].substr(0, listOfVars[i].length() - 1),     z[i]);
+    }
+    symbol_table.add_variable("POSUB",     z[i]); ++i;
+    symbol_table.add_variable("PG",     z[i]); ++i;
+    symbol_table.add_variable("PRNW",     z[i]);
+
     symbol_table.add_constants();
 
-    typedef exprtk::parser<double> parser_t;
+    // typedef exprtk::parser<double> parser_t;
     parser_t parser;
 
     size_t equationsCount =  systemOfEquations.size();
@@ -542,8 +557,13 @@ int main(int argc, char **argv)
 
     minlmresults(state, x, rep);
 
-    cout << "x.length " << x.length() << endl;
+    //cout << "x.length " << x.length() << endl;
     cout << "Solution set: ";
+
+    for(auto var: listOfVars) {
+        cout << var << "  ";
+    }
+    cout << endl;
     for(int index=0; index < x.length(); ++index) {
         printf("%.4f\t", x[index]);
     }
