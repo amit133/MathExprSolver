@@ -5,8 +5,23 @@
 using namespace std;
 using namespace tinyxml2;
 
-bool KXml::LoadXmlFile(string & xmlFileName) {
+KXml::KXml(string & xmlFileName) {
 	xmlFileName_m = xmlFileName;
+	bool fileOpened = LoadXmlFile(xmlFileName);
+	if(!fileOpened) {
+		cerr << "XML File load failure" << endl;
+		return;
+	}
+
+	setActors();
+	setVariables();
+	setPolicies();
+	setParameters();
+	setOptimizeFunctions();
+	setEquations();
+}
+
+bool KXml::LoadXmlFile(string & xmlFileName) {
 	XMLError eResult = doc.LoadFile(xmlFileName_m.c_str());
 	if(eResult != XML_SUCCESS) {
 		cerr << "Could not open xml file: " << xmlFileName_m << endl; 
@@ -17,7 +32,7 @@ bool KXml::LoadXmlFile(string & xmlFileName) {
 	return true;
 }
 
-std::vector<string> KXml::getActors() {
+void KXml::setActors() {
 	auto getChildText = [](XMLElement *parentElement, const char * childElementName) {
 		auto childElement = parentElement->FirstChildElement(childElementName);
 		assert(childElement != 0);
@@ -51,12 +66,10 @@ std::vector<string> KXml::getActors() {
 		auto utility = utilityElement->GetText();
 
 		//auto *influence = actor->FirstChildElement("influence");
-		cout << actorName << ", " << description << ", Influence: " << influence << ", utility: " << utility << endl;
+		//cout << actorName << ", " << description << ", Influence: " << influence << ", utility: " << utility << endl;
 
 		actor = actor->NextSiblingElement("actor");
 	}
-
-	return vector<string>();
 }
 
 void KXml::setVariables() {
@@ -87,19 +100,15 @@ void KXml::setVariables() {
 			initValExpressions[listOfVars.back()] = string(varInitVal);
 		}
 
-		// for(auto initvar : initValExpressions) {
-		// 	cout << initvar.first << initvar.second << endl;
-		// }
-
 		// Go to the next variable
 		varElem = varElem->NextSiblingElement();
 	}
 
-	cout << "Expressions for init values: ";
-	for(auto var : listOfVars) {
-		cout << var << ": " << initValExpressions.at(var) << endl;
-	}
-	cout  << endl << endl;
+	// cout << "Expressions for init values: ";
+	// for(auto var : listOfVars) {
+	// 	cout << var << ": " << initValExpressions.at(var) << endl;
+	// }
+	// cout  << endl << endl;
 }
 
 void KXml::setPolicies() {
@@ -170,150 +179,26 @@ void KXml::setEquations() {
 	}
 }
 
+KXml::listOfVariables KXml::getVariables() {
+	return listOfVars;
+}
+
+KXml::initValExprMap KXml::getInitComputeExpressions() {
+	return initValExpressions;
+}
+
+
 int main() {
-	KXml xmlParser;
 	string xmlFile("sampleinput.xml"); 
-	bool fileOpened = xmlParser.LoadXmlFile(xmlFile);
-	if(!fileOpened) {
-		cerr << "XML File load failure" << endl;
-		return -1;
+	KXml xmlParser(xmlFile);
+	auto listOfVars = xmlParser.getVariables();
+	auto initValExpressions = xmlParser.getInitComputeExpressions();
+
+	cout << "Expressions for initial values: " << endl;
+	for(auto var : listOfVars) {
+		cout << var << ": " << initValExpressions.at(var) << endl;
 	}
+	cout  << endl << endl;
 
-	xmlParser.getActors();
-	xmlParser.setVariables();
-	xmlParser.setPolicies();
-	xmlParser.setParameters();
-	xmlParser.setOptimizeFunctions();
-	xmlParser.setEquations();
-
-/* 	const char *pFilename = "sampleinput.xml";
-	XMLDocument doc;
-	XMLError eResult = doc.LoadFile(pFilename);
-	if(eResult != XML_SUCCESS) {
-		cout << "Could not open xml file: " << pFilename << endl; 
-		return -1;
-	}
-
-	cout << "Loaded xml file: " << pFilename << endl;
-
-	// Get the root element
-	//XMLElement *modelElement = doc.FirstChildElement( "model" );
-	XMLElement *modelElement = doc.RootElement();
- */
-/* 
-	XMLElement *actorsList = modelElement->FirstChildElement("actors");
-	XMLElement *actor = actorsList->FirstChildElement("actor");
-	while(actor) {
-		auto *nameElement = actor->FirstChildElement("name");
-		auto *actorName = nameElement->GetText();
-
-		auto *descriptionElement = nameElement->NextSiblingElement("description");
-		auto description = descriptionElement->GetText();
-
-		auto *influenceElement = descriptionElement->NextSiblingElement("influence");
-		auto influence = influenceElement->GetText();
-
-		auto *utilityElement = influenceElement->NextSiblingElement("utility");
-		auto utility = utilityElement->GetText();
-
-		//auto *influence = actor->FirstChildElement("influence");
-		cout << actorName << ", " << description << ", Influence: " << influence << ", utility: " << utility << endl;
-
-		actor = actor->NextSiblingElement();
-	}
- */	
-
-/* 	XMLElement *variables = modelElement->FirstChildElement("variables");
-	auto *varElem = variables->FirstChildElement("variable");
-	while(varElem) {
-		auto *varNameElem = varElem->FirstChildElement("name");
-		assert (varNameElem != nullptr);
-
-		auto varName = varNameElem->GetText();
-
-		auto varInitValElem = varElem->FirstChildElement("initial");
-		auto varInitVal = varInitValElem->GetText();
-
-		// If an initial value is not there, the formula to compute the initial value should be present
-		if(varInitVal == 0) {
-			auto varInitValComputeElem = varElem->FirstChildElement("compute");
-			assert(varInitValComputeElem != 0);
-
-			auto varInitValComputeExpr = varInitValComputeElem->GetText();
-			cout << varName << ": " << varInitValComputeExpr << endl;
-		} else {
-			cout << varName << ": " << varInitVal << endl;
-		}
-
-		// Go to the next variable
-		varElem = varElem->NextSiblingElement();
-	}
- */
-
-/* 	XMLElement *policies = modelElement->FirstChildElement("policy");
-	auto *policyElem = policies->FirstChildElement();
-	while(policyElem) {
-		auto *policyNameElem = policyElem->FirstChildElement("name");
-		assert (policyNameElem != nullptr);
-
-		auto policyName = policyNameElem->GetText();
-
-		auto policyBaseElem = policyElem->FirstChildElement("base");
-		auto policyBase = policyBaseElem->GetText();
-
-		string policyType = policyElem->Name();
-		//cout << "policy Name " << policyElem->Name() << endl;
-		if(policyType == "variable") {
-			cout << "policy variable, " << policyName << ": " << policyBase << endl;
-		} else if(policyType == "constant") {
-			cout << "policy constant, " << policyName << ": " << policyBase << endl;
-		}
-
-		// Go to the next policy
-		policyElem = policyElem->NextSiblingElement();
-	}
- */	
-
-/* 	XMLElement *parameters = modelElement->FirstChildElement("parameters");
-	XMLElement *paramElement = parameters->FirstChildElement("parameter");
-	while(paramElement) {
-		auto paramNameElem = paramElement->FirstChildElement("name");
-		auto paramName = paramNameElem->GetText();
-
-		auto paramValueElem = paramElement->FirstChildElement("value");
-		auto paramValue = paramValueElem->GetText();
-
-		cout << paramName << ": " << paramValue << endl;
-
-		paramElement = paramElement->NextSiblingElement("parameter");
-	}
- */
-
-/* 
-	XMLElement *optimizeFunctions = modelElement->FirstChildElement("optimize");
-	XMLElement *optimizeEquation = optimizeFunctions->FirstChildElement("equation");
-	while(optimizeEquation) {
-		auto optimizeEquationElem = optimizeEquation->FirstChildElement("function");
-		auto optimizeFunction = optimizeEquationElem->GetText();
-		cout << "optimize function: " << optimizeFunction << endl;
-		optimizeEquation = optimizeEquation->NextSiblingElement();
-	}
- */	
-
-/* 	XMLElement *equations = modelElement->FirstChildElement("equations");
-	XMLElement *equationElement = equations->FirstChildElement("equation");
-	while(equationElement) {
-		auto equationNameElem = equationElement->FirstChildElement("name");
-		auto equationName = equationNameElem->GetText();
-
-		auto equationFunctionElem = equationElement->FirstChildElement("function");
-		auto equationFunction = equationFunctionElem->GetText();
-
-		cout << equationName << ": " << equationFunction << endl;
-
-		equationElement = equationElement->NextSiblingElement();
-	}
-
- */	//doc.SaveFile("sample.xml");
 	return 0;
 }

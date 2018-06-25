@@ -10,18 +10,29 @@ private:
 	tinyxml2::XMLElement *rootElement = nullptr;
 
 	typedef std::string variableName;
-	std::vector<variableName> listOfVars;
+	typedef std::vector<variableName> listOfVariables;
+	listOfVariables listOfVars;
+
     typedef std::string initComputeExpr;
     typedef std::map<variableName, initComputeExpr> initValExprMap;
     initValExprMap initValExpressions;
 
-public:
+private:
 	bool LoadXmlFile(std::string & xmlFileName);
-	std::vector<std::string> getActors();
+	void setActors();
 	void setVariables();
 	void setPolicies();
 	void setParameters();
 	void setOptimizeFunctions();
 	void setEquations();
+
+public:
+	KXml() = delete;
+	KXml(const KXml&) = delete;
+	KXml& operator=(const KXml&) = delete;
+	explicit KXml(std::string & xmlFileName);
+
+	listOfVariables getVariables();
+	initValExprMap getInitComputeExpressions();
 };
 

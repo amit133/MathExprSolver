@@ -6,6 +6,8 @@
 #include "exprtk.hpp"
 #include <vector>
 #include<cassert>
+#include "xml/xmlParser.h"
+
 using namespace std;
 
 using namespace alglib;
@@ -46,129 +48,17 @@ std::vector<varName> listOfVars;
 
 typedef exprtk::parser<double> parser_t;
 
+string xmlFile("sampleinput.xml"); 
+
 void setInitValuesOfVars() {
-    //OE0,N0,KP0,C0,E0,G0,RNW0,PE0,OS0,S0,PS0,SF0,W0,R0,SH0,RSTAR0,TR0,PO0,B0,O0,KG0,Y0,POSUB0,PG0,PRNW0
-    varName OE0      =  "OE0";
-    varName N0       =  "N0";
-    varName KP0      =  "KP0";
-    varName C0       =  "C0";
-    varName E0       =  "E0";
-    varName G0       =  "G0";
-    varName RNW0     =  "RNW0";
-    varName PE0      =  "PE0";
-    varName OS0      =  "OS0";
-    varName S0       =  "S0";
-    varName PS0      =  "PS0";
-    varName SF0      =  "SF0";
-    varName W0       =  "W0";
-    varName R0       =  "R0";
-    varName SH0      =  "SH0";
-    varName RSTAR0   =  "RSTAR0";
-    varName TR0      =  "TR0";
-    varName PO0      =  "PO0";
-    varName B0       =  "B0";
-    varName O0       =  "O0";
-    varName KG0      =  "KG0";
-    varName Y0       =  "Y0";
-
-    listOfVars.push_back( OE0   );
-    listOfVars.push_back( N0    );
-    listOfVars.push_back( KP0   );
-    listOfVars.push_back( C0    );
-    listOfVars.push_back( E0    );
-    listOfVars.push_back( G0    );
-    listOfVars.push_back( RNW0  );
-    listOfVars.push_back( PE0   );
-    listOfVars.push_back( OS0   );
-    listOfVars.push_back( S0    );
-    listOfVars.push_back( PS0   );
-    listOfVars.push_back( SF0   );
-    listOfVars.push_back( W0    );
-    listOfVars.push_back( R0    );
-    listOfVars.push_back( SH0   );
-    listOfVars.push_back( RSTAR0);
-    listOfVars.push_back( TR0   );
-    listOfVars.push_back( PO0   );
-    listOfVars.push_back( B0    );
-    listOfVars.push_back( O0    );
-    listOfVars.push_back( KG0   );
-    listOfVars.push_back( Y0    );
-
-    typedef std::string initValExpr;
-    initValExpr OE0_expr      =  "0.0305";
-    initValExpr N0_expr       =  "1";
-    initValExpr KP0_expr      =  "5.6246";
-    initValExpr C0_expr       =  ".9363";
-    initValExpr E0_expr       =  "alpha*OE0+beta*gexg+gamma*A*igexg/nu";
-    initValExpr G0_expr       =  "gexg";
-    initValExpr RNW0_expr     =  "A*igexg/nu";
-    initValExpr PE0_expr      =  "1/alpha*posubexg";
-    initValExpr OS0_expr      =  "E0*((1-a)/(alpha*a))^(1/(1-lambda))";
-    initValExpr S0_expr       =  "(a*E0^lambda+(1-a)*OS0^lambda)^(1/lambda)";
-    initValExpr PS0_expr      =  "PE0/a*(E0^(1-lambda))*S0^(lambda-1)";
-    initValExpr SF0_expr      =  "KP0*(((RBAR+delta)*b)/(PS0*(1-b)))^(1/(1-niu))";
-    initValExpr W0_expr       =  "theta*N0^(theta-1)*((1-b)*KP0^niu+b*SF0^niu)^((1-theta)/niu)";
-    initValExpr R0_expr       =  "RBAR+delta";
-    initValExpr SH0_expr      =  "S0-SF0";
-    initValExpr RSTAR0_expr   =  "RBAR";
-    initValExpr TR0_expr      =  "PRNW0*RNW0+POSUB0*(OS0+OE0)+poaverage*(oexg-OS0-OE0)+PG0*gexg-igexg";
-    initValExpr PO0_expr      =  "poaverage";
-    initValExpr B0_expr       =  "-bss/RBAR*N0^theta*((1-b)*KP0^niu+b*SF0^niu)^((1-theta)/niu)";
-    initValExpr O0_expr       =  "oexg";
-    initValExpr KG0_expr      =  "igexg/nu";
-    initValExpr Y0_expr       =  "N0^theta*((1-b)*KP0^niu+b*SF0^niu)^((1-theta)/niu)";
-
-    typedef std::string initComputeExpr;
-    typedef std::map<varName, initComputeExpr> initValExprMap;
-    initValExprMap initValExpressions;
-
-    // The push_back() calls would run in a loop when xml reading comes into play
-    initValExpressions[OE0]    = OE0_expr   ;
-    initValExpressions[N0]     = N0_expr    ;
-    initValExpressions[KP0]    = KP0_expr   ;
-    initValExpressions[C0]     = C0_expr    ;
-    initValExpressions[E0]     = E0_expr    ;
-    initValExpressions[G0]     = G0_expr    ;
-    initValExpressions[RNW0]   = RNW0_expr  ;
-    initValExpressions[PE0]    = PE0_expr   ;
-    initValExpressions[OS0]    = OS0_expr   ;
-    initValExpressions[S0]     = S0_expr    ;
-    initValExpressions[PS0]    = PS0_expr   ;
-    initValExpressions[SF0]    = SF0_expr   ;
-    initValExpressions[W0]     = W0_expr    ;
-    initValExpressions[R0]     = R0_expr    ;
-    initValExpressions[SH0]    = SH0_expr   ;
-    initValExpressions[RSTAR0] = RSTAR0_expr;
-    initValExpressions[TR0]    = TR0_expr   ;
-    initValExpressions[PO0]    = PO0_expr   ;
-    initValExpressions[B0]     = B0_expr    ;
-    initValExpressions[O0]     = O0_expr    ;
-    initValExpressions[KG0]    = KG0_expr   ;
-    initValExpressions[Y0]     = Y0_expr    ;
+	KXml xmlParser(xmlFile);
+	listOfVars = xmlParser.getVariables();
+	auto initValExpressions = xmlParser.getInitComputeExpressions();
 
     // The map would be populated in a loop when xml reading comes into play
-	initValuesOfVars[OE0]       = 0.0;
-    initValuesOfVars[E0]        = 0.0;
-    initValuesOfVars[G0]        = 0.0;
-    initValuesOfVars[RNW0]      = 0.0;
-    initValuesOfVars[PE0]       = 0.0;
-    initValuesOfVars[S0]        = 0.0;
-    initValuesOfVars[OS0]       = 0.0;
-    initValuesOfVars[PS0]       = 0.0;
-    initValuesOfVars[N0]        = 0.0;
-    initValuesOfVars[KP0]       = 0.0;
-    initValuesOfVars[SF0]       = 0.0;
-    initValuesOfVars[W0]        = 0.0;
-    initValuesOfVars[R0]        = 0.0;
-    initValuesOfVars[SH0]       = 0.0;
-    initValuesOfVars[C0]        = 0.0;
-    initValuesOfVars[RSTAR0]    = 0.0;
-    initValuesOfVars[TR0]       = 0.0;
-    initValuesOfVars[PO0]       = 0.0;
-    initValuesOfVars[B0]        = 0.0;
-    initValuesOfVars[O0]        = 0.0;
-    initValuesOfVars[KG0]       = 0.0;
-    initValuesOfVars[Y0]        = 0.0;
+    for(auto var : listOfVars) {
+        initValuesOfVars[var] = 0.0;
+    }
 
     symbol_table_t symbol_table_initvals;
     symbol_table_initvals.add_constants();
@@ -565,7 +455,7 @@ int main(int argc, char **argv)
     }
     cout << endl;
     for(int index=0; index < x.length(); ++index) {
-        printf("%.4f\t", x[index]);
+        printf("%.4f\n", x[index]);
     }
 
     return 0;

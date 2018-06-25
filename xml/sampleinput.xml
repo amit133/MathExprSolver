@@ -227,7 +227,7 @@
             <compute>S0-SF0</compute>
         </variable>
         <variable>
-            <name>RSTAR</name>
+            <name>RSTAR0</name>
             <initial></initial>
             <compute>RBAR</compute>
         </variable>
@@ -260,11 +260,6 @@
             <name>Y0</name>
             <initial></initial>
             <compute>N0^theta*((1-b)*KP0^niu+b*SF0^niu)^((1-theta)/niu)</compute>
-        </variable>
-        <variable>
-            <name>PO0</name>
-            <initial></initial>
-            <compute>poaverage</compute>
         </variable>
     </variables>
     <policy>
