@@ -121,19 +121,35 @@ void KXml::setPolicies() {
 		auto policyName = policyNameElem->GetText();
 
 		auto policyBaseElem = policyElem->FirstChildElement("base");
-		auto policyBase = policyBaseElem->GetText();
+		auto policyBase = policyBaseElem->DoubleText();
 
 		string policyType = policyElem->Name();
 		//cout << "policy Name " << policyElem->Name() << endl;
 		if(policyType == "variable") {
 			//cout << "policy variable, " << policyName << ": " << policyBase << endl;
+			listOfPolicyVariableNames.push_back(policyName);
+			policyVariables[policyName] = policyBase;
 		} else if(policyType == "constant") {
 			//cout << "policy constant, " << policyName << ": " << policyBase << endl;
+			policyConstants[policyName] = policyBase;
+		} else {
+			cerr << "Invalid xml tag under policy" << endl;
 		}
 
 		// Go to the next policy
 		policyElem = policyElem->NextSiblingElement();
 	}
+}
+
+KXml::policies KXml::getPolicyVariables() {
+	return policyVariables;
+}
+
+KXml::policies KXml::getPolicyConstants() {
+	return policyConstants;
+}
+std::vector<KXml::policyName> KXml::getPolicyVariableNames() {
+	return listOfPolicyVariableNames;
 }
 
 void KXml::setParameters() {
@@ -165,8 +181,15 @@ void KXml::setOptimizeFunctions() {
 		auto optimizeEquationElem = optimizeEquation->FirstChildElement("function");
 		auto optimizeFunction = optimizeEquationElem->GetText();
 		//cout << "optimize function: " << optimizeFunction << endl;
+		systemOfFunctions.push_back(optimizeFunction);
+
+		// Go to next function
 		optimizeEquation = optimizeEquation->NextSiblingElement();
 	}
+}
+
+KXml::optimizingFunctions KXml::getOptimizeFunctions() {
+	return systemOfFunctions;
 }
 
 void KXml::setEquations() {

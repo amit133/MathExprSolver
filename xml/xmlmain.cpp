@@ -20,5 +20,24 @@ int main() {
 	}
 	cout  << endl << endl;
 
+    auto polVarNames = xmlParser.getPolicyVariableNames();
+    cout << "Names of Policy variables: ";
+    for(auto policy : polVarNames) {
+        cout <<  policy << " ";
+    }
+    cout << endl;
+
+    auto policyVariables = xmlParser.getPolicyVariables();
+    cout << "Policy variable names and initial values: " << endl;
+    for(auto policy : policyVariables) {
+        cout << policy.first << ": " << policy.second << endl;
+    }
+
+    auto policyConstants = xmlParser.getPolicyConstants();
+    cout << "Policy constant names and initial values: " << endl;
+    for(auto policy : policyConstants) {
+        cout << policy.first << ": " << policy.second << endl;
+    }
+
 	return 0;
 }
