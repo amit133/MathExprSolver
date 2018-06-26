@@ -126,9 +126,9 @@ void KXml::setPolicies() {
 		string policyType = policyElem->Name();
 		//cout << "policy Name " << policyElem->Name() << endl;
 		if(policyType == "variable") {
-			cout << "policy variable, " << policyName << ": " << policyBase << endl;
+			//cout << "policy variable, " << policyName << ": " << policyBase << endl;
 		} else if(policyType == "constant") {
-			cout << "policy constant, " << policyName << ": " << policyBase << endl;
+			//cout << "policy constant, " << policyName << ": " << policyBase << endl;
 		}
 
 		// Go to the next policy
@@ -144,12 +144,18 @@ void KXml::setParameters() {
 		auto paramName = paramNameElem->GetText();
 
 		auto paramValueElem = paramElement->FirstChildElement("value");
-		auto paramValue = paramValueElem->GetText();
+		auto paramValue = paramValueElem->DoubleText();
 
-		cout << paramName << ": " << paramValue << endl;
+		params[paramName] = paramValue;
+
+		//cout << paramName << ": " << paramValue << endl;
 
 		paramElement = paramElement->NextSiblingElement("parameter");
 	}
+}
+
+KXml::parameters KXml::getParameters() {
+	return params;
 }
 
 void KXml::setOptimizeFunctions() {
@@ -158,7 +164,7 @@ void KXml::setOptimizeFunctions() {
 	while(optimizeEquation) {
 		auto optimizeEquationElem = optimizeEquation->FirstChildElement("function");
 		auto optimizeFunction = optimizeEquationElem->GetText();
-		cout << "optimize function: " << optimizeFunction << endl;
+		//cout << "optimize function: " << optimizeFunction << endl;
 		optimizeEquation = optimizeEquation->NextSiblingElement();
 	}
 }
@@ -173,7 +179,7 @@ void KXml::setEquations() {
 		auto equationFunctionElem = equationElement->FirstChildElement("function");
 		auto equationFunction = equationFunctionElem->GetText();
 
-		cout << equationName << ": " << equationFunction << endl;
+		//cout << equationName << ": " << equationFunction << endl;
 
 		equationElement = equationElement->NextSiblingElement();
 	}
@@ -188,7 +194,7 @@ KXml::initValExprMap KXml::getInitComputeExpressions() {
 }
 
 
-int main() {
+/* int main() {
 	string xmlFile("sampleinput.xml"); 
 	KXml xmlParser(xmlFile);
 	auto listOfVars = xmlParser.getVariables();
@@ -198,7 +204,14 @@ int main() {
 	for(auto var : listOfVars) {
 		cout << var << ": " << initValExpressions.at(var) << endl;
 	}
+
+	cout << "Parameters: " << endl;
+	auto params = xmlParser.getParameters();
+	for(auto param : params) {
+		cout << param.first << ": " << param.second << endl;
+	}
 	cout  << endl << endl;
 
 	return 0;
 }
+ */

@@ -17,6 +17,12 @@ private:
     typedef std::map<variableName, initComputeExpr> initValExprMap;
     initValExprMap initValExpressions;
 
+	// parameters
+	typedef std::string paramName;
+	typedef double paramValue;
+	typedef std::map<paramName, paramValue> parameters;
+	parameters params;
+
 private:
 	bool LoadXmlFile(std::string & xmlFileName);
 	void setActors();
@@ -34,5 +40,6 @@ public:
 
 	listOfVariables getVariables();
 	initValExprMap getInitComputeExpressions();
+	parameters getParameters();
 };
 
