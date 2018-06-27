@@ -41,7 +41,7 @@ void KXml::setActors() {
 	};
 
 	auto getSiblingText = [](XMLElement *currentElement, const char * siblingElementName){
-		auto *siblingElement = currentElement->NextSiblingElement(siblingElementName);
+		auto siblingElement = currentElement->NextSiblingElement(siblingElementName);
 		assert(siblingElement != 0);
 		auto text = siblingElement->GetText();
 		assert(text != 0);
@@ -51,32 +51,35 @@ void KXml::setActors() {
 	XMLElement *actorsList = rootElement->FirstChildElement("actors");
 	XMLElement *actor = actorsList->FirstChildElement("actor");
 	while(actor) {
-		auto *nameElement = actor->FirstChildElement("name");
-		auto *actorName = nameElement->GetText();
+		auto nameElement = actor->FirstChildElement("name");
+		auto actorName = nameElement->GetText();
 
 		// auto actorName = getChildText(actor, "name");
 
-		auto *descriptionElement = nameElement->NextSiblingElement("description");
+		auto descriptionElement = nameElement->NextSiblingElement("description");
 		auto description = descriptionElement->GetText();
 
-		auto *influenceElement = descriptionElement->NextSiblingElement("influence");
+		auto influenceElement = descriptionElement->NextSiblingElement("influence");
 		auto influence = influenceElement->GetText();
 
-		auto *utilityElement = influenceElement->NextSiblingElement("utility");
+		auto utilityElement = influenceElement->NextSiblingElement("utility");
 		auto utility = utilityElement->GetText();
 
-		//auto *influence = actor->FirstChildElement("influence");
-		//cout << actorName << ", " << description << ", Influence: " << influence << ", utility: " << utility << endl;
+		actorUtils[actorName] = utility;
 
 		actor = actor->NextSiblingElement("actor");
 	}
 }
 
+KXml::actorUtilities KXml::getActorUtilities() const {
+	return actorUtils;
+}
+
 void KXml::setVariables() {
 	XMLElement *variables = rootElement->FirstChildElement("variables");
-	auto *varElem = variables->FirstChildElement("variable");
+	auto varElem = variables->FirstChildElement("variable");
 	while(varElem) {
-		auto *varNameElem = varElem->FirstChildElement("name");
+		auto varNameElem = varElem->FirstChildElement("name");
 		assert (varNameElem != nullptr);
 
 		auto varName = varNameElem->GetText();
@@ -113,9 +116,9 @@ void KXml::setVariables() {
 
 void KXml::setPolicies() {
 	XMLElement *policies = rootElement->FirstChildElement("policy");
-	auto *policyElem = policies->FirstChildElement();
+	auto policyElem = policies->FirstChildElement();
 	while(policyElem) {
-		auto *policyNameElem = policyElem->FirstChildElement("name");
+		auto policyNameElem = policyElem->FirstChildElement("name");
 		assert (policyNameElem != nullptr);
 
 		auto policyName = policyNameElem->GetText();
@@ -203,9 +206,13 @@ void KXml::setEquations() {
 		auto equationFunction = equationFunctionElem->GetText();
 
 		//cout << equationName << ": " << equationFunction << endl;
-
+		equationFunctions[equationName] = equationFunction;
 		equationElement = equationElement->NextSiblingElement();
 	}
+}
+
+KXml::equations KXml::getEquationFunctions() {
+	return equationFunctions;
 }
 
 KXml::listOfVariables KXml::getVariables() {
@@ -215,26 +222,3 @@ KXml::listOfVariables KXml::getVariables() {
 KXml::initValExprMap KXml::getInitComputeExpressions() {
 	return initValExpressions;
 }
-
-
-/* int main() {
-	string xmlFile("sampleinput.xml"); 
-	KXml xmlParser(xmlFile);
-	auto listOfVars = xmlParser.getVariables();
-	auto initValExpressions = xmlParser.getInitComputeExpressions();
-
-	cout << "Expressions for initial values: " << endl;
-	for(auto var : listOfVars) {
-		cout << var << ": " << initValExpressions.at(var) << endl;
-	}
-
-	cout << "Parameters: " << endl;
-	auto params = xmlParser.getParameters();
-	for(auto param : params) {
-		cout << param.first << ": " << param.second << endl;
-	}
-	cout  << endl << endl;
-
-	return 0;
-}
- */

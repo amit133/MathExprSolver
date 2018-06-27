@@ -17,7 +17,7 @@
             <name>govt</name>
             <description>government</description>
             <influence>.2</influence>
-            <utility>govUtilWs(1)*welfare - govUtilWs(2)*renewDevi - govUtilWs(3)*oilPriceMove</utility>
+            <utility>govUtilW0*welfare - govUtilW1*renewDevi - govUtilW2*oilPriceMove</utility>
         </actor>
         <actor>
             <name>labor</name>

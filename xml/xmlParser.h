@@ -32,9 +32,20 @@ private:
 	parameters params;
 
 	// System of Optimization Equations
-    typedef std::string equation;
-    typedef std::vector<equation> optimizingFunctions;
+    typedef std::string function;
+    typedef std::vector<function> optimizingFunctions;
     optimizingFunctions systemOfFunctions;
+
+	// equations to store values using the optimized values of variables
+    typedef std::string functionName;
+	typedef std::map<functionName, function> equations;
+	equations equationFunctions;
+
+	// Actor utilities functions
+	typedef std::string actorName;
+	typedef std::string utilFunction;
+	typedef std::map<actorName, utilFunction> actorUtilities;
+	actorUtilities actorUtils;
 
 private:
 	bool LoadXmlFile(std::string & xmlFileName);
@@ -58,5 +69,7 @@ public:
 	policies getPolicyVariables();
 	policies getPolicyConstants();
 	std::vector<policyName> getPolicyVariableNames();
+	equations getEquationFunctions();
+	actorUtilities getActorUtilities() const;
 };
 

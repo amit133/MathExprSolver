@@ -6,6 +6,7 @@
 #include "exprtk.hpp"
 #include <vector>
 #include<cassert>
+#include <iomanip>
 #include "xml/xmlParser.h"
 
 using namespace std;
@@ -32,8 +33,13 @@ std::vector<varName> listOfVars;
 
 typedef exprtk::parser<double> parser_t;
 
+// xml parse
 string xmlFile("sampleinput.xml"); 
 KXml xmlParser(xmlFile);
+
+// data structure to store the optimized solution
+typedef map<string, double> Solution;
+Solution optimumSolution;
 
 void setInitValuesOfVars() {
 	listOfVars = xmlParser.getVariables();
@@ -180,6 +186,34 @@ void  function1_fvec(const real_1d_array &x, real_1d_array &fi, void *ptr)
     cout << endl;
 }
 
+void calcActorUtils() {
+    // typedef exprtk::details::variable_node<double> exprtk_var_ptr;
+    // exprtk_var_ptr *v = symbol_table.get_variable("POSUB");
+    // cout << "Symbol name: " << "POSUB" << ", symbol value: " << v->value() << endl;
+
+    parser_t parser;
+
+    expression_t expr;
+    expr.register_symbol_table(symbol_table);
+
+    auto equationFunctions = xmlParser.getEquationFunctions();
+
+    for(auto func : equationFunctions) {
+        parser.compile(func.second, expr);
+        double funcValue = expr.value();
+        symbol_table.add_constant(func.first, funcValue);
+        cout << func.first << " (" << func.second << "): " << funcValue << endl;
+    }
+
+    auto actorUtilFunctions = xmlParser.getActorUtilities();
+
+    for(auto actorUtil : actorUtilFunctions) {
+        parser.compile(actorUtil.second, expr);
+        double aUtil = expr.value();
+        cout << "Util of " << actorUtil.first << " (" << actorUtil.second << "): " << aUtil << endl;
+    }
+}
+
 int main(int argc, char **argv)
 {
     //
@@ -218,18 +252,44 @@ int main(int argc, char **argv)
 
     minlmresults(state, x, rep);
 
-    cout << "Solution set: ";
+    size_t x_index = 0;
 
     for(auto var: listOfVars) {
-        cout << var << "  ";
+        optimumSolution[var] = x[x_index];
+        symbol_table.remove_variable(var.substr(0, var.length()-1));
+        symbol_table.add_constant(var.substr(0, var.length()-1), x[x_index]);
+        ++x_index;
     }
+
     for(auto var: xmlParser.getPolicyVariableNames()) {
-        cout << var << "  ";
+        optimumSolution[var] = x[x_index];
+        symbol_table.remove_variable(var.substr(0, var.length()-1));
+        symbol_table.add_constant(var.substr(0, var.length()-1), x[x_index]);
+        ++x_index;
     }
+
+    cout << "Optimized solution set: " << endl;
+
+    cout << std::fixed;
+    std::streamsize ss = std::cout.precision();
+    cout << std::setprecision(4);
+    for(auto var: listOfVars) {
+        cout << var << ":       " << optimumSolution.at(var) << endl;
+    }
+
+    for(auto var: xmlParser.getPolicyVariableNames()) {
+        cout << var << ": " << optimumSolution.at(var) << endl;
+    }
+
+    cout << std::setprecision(ss);
+
+    // Calculate actor utilities based on optimized solution
+    calcActorUtils();
+
     cout << endl;
-    for(int index=0; index < x.length(); ++index) {
-        printf("%.4f\n", x[index]);
-    }
+    // for(int index=0; index < x.length(); ++index) {
+    //     printf("%.4f\n", x[index]);
+    // }
 
     return 0;
 }
